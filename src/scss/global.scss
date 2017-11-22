@@ -2,4 +2,24 @@ body {
   margin: 0;
   font-size: $font-size;
   font-family: sans-serif;
+
+  @media (min-width: 768px) {
+    display: block;
+  }
+}
+
+.container {
+  @include grid();
+}
+
+.form {
+  @include form();
+}
+
+.block {
+  display: none;
+
+  @media (min-width: 768px) {
+    display: flex;
+  }
 }

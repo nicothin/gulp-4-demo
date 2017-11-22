@@ -1,16 +1,21 @@
 'use strict';
 
 const gulp = require('gulp');
+
 const sass = require('gulp-sass');
-const del = require('del');
-const rename = require('gulp-rename');
-const sourcemaps = require('gulp-sourcemaps');
+const sassGlob = require('gulp-sass-glob');
+const groupMediaQueries = require('gulp-group-css-media-queries');
+const cleanCSS = require('gulp-cleancss');
 
 const concat = require('gulp-concat');
 const uglify = require('gulp-uglify');
+const babel = require('gulp-babel');
 
+const rename = require('gulp-rename');
+const sourcemaps = require('gulp-sourcemaps');
 const replace = require('gulp-replace');
-
+const del = require('del');
+const plumber = require('gulp-plumber');
 const browserSync = require('browser-sync').create();
 
 const paths =  {
@@ -20,8 +25,12 @@ const paths =  {
 
 function styles() {
   return gulp.src(paths.src + 'scss/style.scss')
+    .pipe(plumber())
     .pipe(sourcemaps.init())
-    .pipe(sass({ outputStyle: 'compressed' }))
+    .pipe(sassGlob())
+    .pipe(sass()) // { outputStyle: 'compressed' }
+    .pipe(groupMediaQueries())
+    .pipe(cleanCSS())
     .pipe(rename({ suffix: ".min" }))
     .pipe(sourcemaps.write('/'))
     .pipe(gulp.dest(paths.build + 'css/'))
@@ -29,6 +38,10 @@ function styles() {
 
 function scripts() {
   return gulp.src(paths.src + 'js/*.js')
+    .pipe(plumber())
+    .pipe(babel({
+      presets: ['env']
+    }))
     .pipe(uglify())
     .pipe(concat('script.min.js'))
     .pipe(gulp.dest(paths.build + 'js/'))
@@ -36,6 +49,7 @@ function scripts() {
 
 function htmls() {
   return gulp.src(paths.src + '*.html')
+    .pipe(plumber())
     .pipe(replace(/\n\s*<!--DEV[\s\S]+?-->/gm, ''))
     .pipe(gulp.dest(paths.build));
 }

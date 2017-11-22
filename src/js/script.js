@@ -1,3 +1,4 @@
-var message = 'Сообщение в консоли браузера';
+let name = 'User Name';
+let place = 'Flavortown';
 
-console.log(message);
+console.log( `Hello ${name}, ready for ${place}?` );
