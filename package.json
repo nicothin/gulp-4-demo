@@ -4,6 +4,9 @@
   "description": "Демо автоматизации с gulp 4",
   "author": "Nikolay Gromov",
   "license": "ISC",
+  "scripts": {
+    "start": "gulp"
+  },
   "devDependencies": {
     "babel-core": "^6.26.0",
     "babel-preset-env": "^1.6.1",
