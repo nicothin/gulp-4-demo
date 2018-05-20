@@ -3,8 +3,8 @@ body {
   font-size: $font-size;
   font-family: sans-serif;
 
-  @media (min-width: 768px) {
-    display: block;
+  @media (min-width: $screen-sm) {
+    background-color: #ff0;
   }
 }
 
@@ -19,7 +19,7 @@ body {
 .block {
   display: none;
 
-  @media (min-width: 768px) {
+  @media (min-width: $screen-sm) {
     display: flex;
   }
 }
