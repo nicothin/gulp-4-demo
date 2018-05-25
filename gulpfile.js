@@ -6,6 +6,8 @@ const sass = require('gulp-sass');
 const sassGlob = require('gulp-sass-glob');
 const groupMediaQueries = require('gulp-group-css-media-queries');
 const cleanCSS = require('gulp-cleancss');
+const postcss = require('gulp-postcss');
+const autoprefixer = require('autoprefixer');
 
 const concat = require('gulp-concat');
 const uglify = require('gulp-uglify');
@@ -17,6 +19,9 @@ const replace = require('gulp-replace');
 const del = require('del');
 const plumber = require('gulp-plumber');
 const browserSync = require('browser-sync').create();
+
+const svgstore = require('gulp-svgstore');
+const svgmin = require('gulp-svgmin');
 
 const paths =  {
   src: './src/',              // paths.src
@@ -30,10 +35,29 @@ function styles() {
     .pipe(sassGlob())
     .pipe(sass()) // { outputStyle: 'compressed' }
     .pipe(groupMediaQueries())
+    .pipe(postcss([
+      autoprefixer({browsers: ['last 9 version']}),
+    ]))
     .pipe(cleanCSS())
     .pipe(rename({ suffix: ".min" }))
     .pipe(sourcemaps.write('/'))
     .pipe(gulp.dest(paths.build + 'css/'))
+}
+
+function svgSprite() {
+  return gulp.src(paths.src + 'svg/*.svg')
+    .pipe(svgmin(function (file) {
+      return {
+        plugins: [{
+          cleanupIDs: {
+            minify: true
+          }
+        }]
+      }
+    }))
+    .pipe(svgstore({ inlineSvg: true }))
+    .pipe(rename('sprite-svg.svg'))
+    .pipe(gulp.dest(paths.build + 'img/'));
 }
 
 function scripts() {
@@ -76,19 +100,20 @@ function serve() {
 exports.styles = styles;
 exports.scripts = scripts;
 exports.htmls = htmls;
+exports.svgSprite = svgSprite;
 exports.clean = clean;
 exports.watch = watch;
 
 gulp.task('build', gulp.series(
   clean,
-  styles,
-  scripts,
-  htmls
-  // gulp.parallel(styles, scripts, htmls)
+  // styles,
+  // scripts,
+  // htmls
+  gulp.parallel(styles, svgSprite, scripts, htmls)
 ));
 
 gulp.task('default', gulp.series(
   clean,
-  gulp.parallel(styles, scripts, htmls),
+  gulp.parallel(styles, svgSprite, scripts, htmls),
   gulp.parallel(watch, serve)
 ));
