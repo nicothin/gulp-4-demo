@@ -29,7 +29,7 @@ const paths =  {
 };
 
 function styles() {
-  return gulp.src(paths.src + 'scss/style.scss')
+  return gulp.src(paths.src + 'scss/main.scss')
     .pipe(plumber())
     .pipe(sourcemaps.init())
     .pipe(sassGlob())
@@ -42,6 +42,9 @@ function styles() {
     .pipe(rename({ suffix: ".min" }))
     .pipe(sourcemaps.write('/'))
     .pipe(gulp.dest(paths.build + 'css/'))
+    .pipe(cleanCSS())
+    .pipe(rename('main.min.css'))
+    .pipe(gulp.dest(paths.build + 'css/'));
 }
 
 function svgSprite() {
