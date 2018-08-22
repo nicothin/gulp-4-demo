@@ -22,6 +22,7 @@ const browserSync = require('browser-sync').create();
 
 const svgstore = require('gulp-svgstore');
 const svgmin = require('gulp-svgmin');
+const imagemin = require('gulp-imagemin');
 
 const paths =  {
   src: './src/',              // paths.src
@@ -36,14 +37,11 @@ function styles() {
     .pipe(sass()) // { outputStyle: 'compressed' }
     .pipe(groupMediaQueries())
     .pipe(postcss([
-      autoprefixer({browsers: ['last 9 version']}),
+      autoprefixer({browsers: ['last 2 version']}),
     ]))
     .pipe(cleanCSS())
     .pipe(rename({ suffix: ".min" }))
     .pipe(sourcemaps.write('/'))
-    .pipe(gulp.dest(paths.build + 'css/'))
-    .pipe(cleanCSS())
-    .pipe(rename('main.min.css'))
     .pipe(gulp.dest(paths.build + 'css/'));
 }
 
@@ -74,11 +72,27 @@ function scripts() {
     .pipe(gulp.dest(paths.build + 'js/'))
 }
 
+function scriptsVendors() {
+  return gulp.src([
+      'node_modules/jquery/dist/jquery.min.js',
+      'node_modules/slick-carousel/slick/slick.min.js',
+      'node_modules/svg4everybody/dist/svg4everybody.min.js'
+    ])
+    .pipe(concat('vendors.min.js'))
+    .pipe(gulp.dest(paths.build + 'js/'))
+}
+
 function htmls() {
   return gulp.src(paths.src + '*.html')
     .pipe(plumber())
     .pipe(replace(/\n\s*<!--DEV[\s\S]+?-->/gm, ''))
     .pipe(gulp.dest(paths.build));
+}
+
+function images() {
+  return gulp.src(paths.src + 'img/*.{jpg,jpeg,png,gif,svg}')
+    .pipe(imagemin()) // если картинок будет много, то и времени будет уходить много
+    .pipe(gulp.dest(paths.build + 'img/'));
 }
 
 function clean() {
@@ -102,21 +116,20 @@ function serve() {
 
 exports.styles = styles;
 exports.scripts = scripts;
+exports.scriptsVendors = scriptsVendors;
 exports.htmls = htmls;
+exports.images = images;
 exports.svgSprite = svgSprite;
 exports.clean = clean;
 exports.watch = watch;
 
 gulp.task('build', gulp.series(
   clean,
-  // styles,
-  // scripts,
-  // htmls
-  gulp.parallel(styles, svgSprite, scripts, htmls)
+  gulp.parallel(styles, svgSprite, scripts, scriptsVendors, htmls, images)
 ));
 
 gulp.task('default', gulp.series(
   clean,
-  gulp.parallel(styles, svgSprite, scripts, htmls),
+  gulp.parallel(styles, svgSprite, scripts, scriptsVendors, htmls, images),
   gulp.parallel(watch, serve)
 ));
